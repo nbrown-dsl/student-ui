@@ -1,0 +1,119 @@
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+<html>
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- for rendering to mobile devices -->
+<title>My Units</title>
+
+</head>
+
+  <body>
+  
+  <div class="demo">
+  
+<!-- Simple header with scrollable tabs. -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">Units for <?= name ?></span>
+    </div>
+     <!-- Colored FAB button with ripple -->
+ <span id="buttons-menu">
+  <a href = "https://mail.google.com/mail" target = "_blank" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored mdl-button--raised fab_buttons" id = "mail_button">
+  <i class="material-icons mail_icon">email</i>
+  </a>
+  <div class="mdl-tooltip" for="mail_button">Mail from teacher</div>
+  
+  <a href = "https://drive.google.com/drive" target = "_blank" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored mdl-button--raised fab_buttons" id = "folder_button">
+  <i class="material-icons">folder</i>
+  </a>
+  <div class="mdl-tooltip" for="folder_button">Subject folder</div>
+  
+  <a href = "https://drive.google.com/drive" target = "_blank" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored mdl-button--raised fab_buttons" id = "feedbackButton">
+  <i class="material-icons">feedback</i>
+  </a>
+  <div class="mdl-tooltip" for="feedbackButton">Feedback</div>
+  
+  <a href = "https://drive.google.com/drive" target = "_blank" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored mdl-button--raised fab_buttons" id = "calEvents">
+  <i class="material-icons">event</i>
+  </a>
+  <div class="mdl-tooltip" for="calEvents">Events</div>
+  
+ </span>
+    <div class="mdl-layout-spacer"></div>
+    <!-- Tabs -->
+    <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+    <button class="mdl-button mdl-js-button mdl-button--icon autorenew" >
+    <i class="material-icons ">refresh</i>
+    </button>
+    <a href="#messages" class="mdl-layout__tab classLink"  value="" id="group_all">ALL</a>
+     <? for (var g=1; g<12; g++) { ?>
+      <a href="#messages" class="mdl-layout__tab classLink "  value="null" id="group_<?= g ?>"></a>
+      <a href="" target = "_blank" class="mdl-badge mdl-badge--overlap" id="notification_<?= g ?>" data-badge="4" value=""></a>
+      <? } ?> 
+    </div>
+  </header>
+  
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Links</span>
+    <nav class="mdl-navigation mdl-layout--large-screen-only">
+       <a class="mdl-navigation__link" href="https://sites.google.com/a/dwightlondon.org/dsl-student-hub/home" target="_blank"><i class="material-icons">public</i>&nbsp;&nbsp;School hub</a>
+       <a class="mdl-navigation__link" href="https://mystudentdashboard.com/#/workspace" target="_blank"><i class="material-icons">school</i>&nbsp;&nbsp;Workspaces</a>
+       <a class="mdl-navigation__link" href="https://app.peardeck.com/authedJoin#" target="_blank"><i class="material-icons">school</i>&nbsp;&nbsp;Peardeck</a>
+       <a class="mdl-navigation__link" href="https://dwightlondon.managebac.com/login" target="_blank"><i class="material-icons">school</i>&nbsp;&nbsp;manageBac</a>
+       <a class="mdl-navigation__link" href="https://drive.google.com/a/dwightlondon.org/?tab=mo#my-drive" target="_blank"><i class="material-icons">folder</i>&nbsp;&nbsp;My Drive</a>
+       <a class="mdl-navigation__link" href="https://mail.google.com/mail/u/0/#inbox" target="_blank"><i class="material-icons">email</i>&nbsp;&nbsp;My Mail</a>
+      </nav>
+  </div>
+  
+    <!-- Pages -->
+   <div id ="units_spinner" class="mdl-spinner mdl-js-spinner is-active"></div>  
+  <main class="mdl-layout__content" id="main_content">
+  
+  
+    <section id="groupContent">
+     
+        <div class ="panel" id="units">
+           <h6 id = "noUnits">No units linked to this group</h6>
+             <div  id="unitCards">
+               <? for (var u=0; u<12; u++) { ?>
+                <div class="demo-card-square mdl-card mdl-shadow--8dp card" id="card_<?= u ?>">
+                
+                  <div class="mdl-card__title mdl-card--expand card_background" id = "cardColor_<?= u ?>" >
+                  <h2 class="mdl-card__title-text" id="title_<?= u ?>">Unit title</h2>
+                  </div>
+                   <div class="mdl-card__supporting-text" id="text_<?= u ?>" >Statement of inquiry</div>
+                    <div class="mdl-card__actions mdl-card--border">
+                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" id="unitLink_<?= u ?>" target="_blank" href="">
+                     View Resources</a>
+                    </div>
+                </div>
+             <? } ?>
+             
+           </div>   
+        </div>
+        
+ 
+    </section>
+    
+   
+
+  </main>
+</div>
+ 
+   
+  </div>
+  
+  
+
+  </body>
+  
+</html>
+
+<!-- Store data passed to template here, so it is available to the
+     imported JavaScript. -->
+
+<!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+<?!= HtmlService.createHtmlOutputFromFile('JavaScript').getContent(); ?>

@@ -1,0 +1,222 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+ 
+ 
+ <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.indigo-pink.min.css">
+<script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+
+<script>
+
+  /**
+   * Run initializations on web app load.
+   */
+  $('.mdl-badge, .card, #noUnits, #main_content').hide();
+  $('.fab_buttons').addClass('mdl-button--disabled');
+  updateLinks(); //populate menu with group links
+  updatePanel(); //shows all units
+
+$('.classLink').click(function() {
+
+   // $( ".selector" ).empty();
+    $('#error-message').hide();
+   // $('#link_to_mail').hide();
+   // $('#message_spinner').show();
+    
+    var groupEmail =$(this).attr("value");
+    
+    updatePanel(groupEmail);
+
+});
+
+$('.autorenew').click(function() {
+
+$('.autorenew').addClass('mdl-button--disabled');
+ updateNotifications(); //get unread thread numbers and show on badges
+ 
+});
+
+ // Call the server here to retrieve any information needed to build the page.
+function updatePanel(group) {
+
+var myrunner1 = google.script.run
+       .withFailureHandler(function(msg) { // Respond to failure conditions here.
+            $('.mdl-progress').hide();
+            $('#error-message').show();
+          });
+          
+var myrunnerUnits = google.script.run
+       .withSuccessHandler(function(contents) { // Respond to success conditions here.
+         unitCards(contents);
+          })
+          
+//shows all units if no single group argument passed
+if (!group) {        
+             myrunnerUnits.unitPlans(); //gets arrays of units plan info and links for *all* groups
+             $('.fab_buttons').addClass('mdl-button--disabled');
+             $('#mail_button').attr('href', 'https://mail.google.com/mail');
+           }
+//if single group argument then shows group units, feedback and messages, otherwsie shows all units
+else {
+
+//runs server function to find owner (teacher) of group for mail button link
+var myrunnerButtons = google.script.run
+       .withSuccessHandler(function(groupInfo) { // Respond to success conditions here.
+         
+         var groupCode = group.split("@");
+           groupUnits(groupCode[0]); //hides all unit cards except those belonging to chosen group
+
+       $('#feedbackButton').attr('href', 'https://script.google.com/a/macros/dwightlondon.org/s/AKfycbwdy2p4xA1Szzfu9MQbwyBo2dGeYFlq094ZhYhvLXNbXuEobJQ/exec?classcode='+groupCode[0]); 
+       $('#mail_button').attr('href', 'https://mail.google.com/mail/u/0/?view=cm&fs=1&to='+groupInfo.owners);
+       $('#folder_button').attr('href', 'https://drive.google.com/drive/search?q='+groupCode[0]+'%20type:folder');
+       $('#calEvents').attr('href', groupInfo.calendarLink);
+       
+       $('.fab_buttons').hide().fadeIn(2000).removeClass('mdl-button--disabled');
+         
+         
+          });
+    
+    myrunnerButtons.groupOwner(group);
+          
+   }
+}
+
+
+function updateLinks() {
+
+      var myrunnerGroups = google.script.run
+       .withSuccessHandler(function(groupsObject) { // Respond to success conditions here.
+         
+       for (var g=1; g<groupsObject.length; g++) {
+       
+       $('#group_'+g).text(groupsObject[g].groupName);
+       $('#group_'+g).attr('value',groupsObject[g].groupEmail);
+       $('#notification_'+g).attr('href','https://mail.google.com/mail/ca/u/0/#search/is%3Aunread+to%3A'+groupsObject[g].groupEmail);
+       $('#notification_'+g).attr('value', groupsObject[g].groupEmail);
+          }
+          
+       updateNotifications(); //get unread thread numbers and show on badges
+     
+       });
+
+    myrunnerGroups.usersGroups();    
+}
+
+
+function updateNotifications() {
+
+$('.mdl-badge').hide();
+
+ var groups = $('.mdl-badge').map(function (index, value) { 
+  if ($(this).attr('value')) { return $(this).attr('value'); }
+  });
+
+var arrGroups = jQuery.makeArray( groups );
+
+var myrunnerNotifications = google.script.run
+       .withSuccessHandler(function(unreadNumbers) { // Respond to success conditions here.
+         
+    $.each(unreadNumbers,function (index, value) { 
+    
+    var index = index +1;
+  
+  if (value > 0) { $('#notification_'+index).attr('data-badge',value).fadeIn(1000); }
+  
+}); 
+
+$('.autorenew').removeClass('mdl-button--disabled');     
+      });
+
+    myrunnerNotifications.getUnreadMailNumbers(arrGroups);  
+       
+}
+ 
+ 
+//generates html for all units of all groups  
+  function unitCards(contents) {
+  
+  $('#noUnits').hide();
+   
+  if (contents.length <1 ) { 
+  
+  $('#noUnits').show(); }
+  
+  else {
+     for (var i = 0; i < contents.length; i++) {
+     
+      var title = contents[i][3];  //second number relates to column number of relevant data in spreadsheet
+      var statement = contents[i][4];
+      var unitLink = contents[i][2];
+      var groupCode = contents[i][0];
+      var status = contents[i][5];
+      groupCode = groupCode.split(",");
+      
+      $('#title_'+i).text(title);
+      $('#text_'+i).text(statement);
+      if (unitLink.length >8) { $('#unitLink_'+i).attr('href',unitLink).text('View Resources'); } else { $('#unitLink_'+i).text(''); };
+      if (status.includes("LIVE")) { $('#cardColor_'+i).css('background-color', '#'+Math.floor(Math.random()*16777215).toString(16)) } else { $('#cardColor_'+i).css('background-color', '#C1C1C1') };;
+      for (var c=0; c<groupCode.length; c++) {
+      var groupcode = groupCode[c].toLowerCase();
+      $( '#card_'+i ).addClass(groupcode); }
+      
+      $( '#card_'+i ).fadeIn(500*i);
+      }
+    }
+    
+    $('#error-message, #units_spinner').fadeOut(1000);
+    $('#main_content').show();
+    
+
+  }
+  
+  //hides unit cards not associated with group
+  function groupUnits(groupcode) {
+ 
+  $('.card, #noUnits').hide();
+  if ( $('.'+groupcode).length <1) { $('#noUnits').fadeIn(1000); } else { $('.'+groupcode).fadeIn(500); }
+  
+  }
+  
+  
+  // OBSOLETE mail accordion  
+//  $(function() {
+//  
+//    var icons_mail = {
+//      header: "ui-icon-mail-closed",
+//      activeHeader: "ui-icon-mail-open"
+//    };
+//    $( ".selector" ).accordion({ collapsible: true, active: false, heightStyle: "content"});
+//    $( "#accordion_mail" ).accordion({ icons: icons_mail });
+//  });
+//  
+  
+   //OBSOLETE function to populate accordion elements with email messages
+  
+//  function recentMessages(contents) {
+//  
+//  
+//     for (var i = 0; i < contents.threads.length; i++) {
+//        var subject = contents.threads[i];
+//        var body = contents.messageBodies[i];
+//        $('#accordion_mail').append('<h3>'+subject+'</h3><div>'+body+'</div>');      
+//      }
+//
+//    $('#link_to_mail').show();
+//    $('#mdl-progress_mail').hide();
+//    $('#error-message').hide();
+//
+//  }
+  
+  
+  
+//  function getFeedback(group) {
+//  
+//  var appUrl = "https://script.google.com/a/macros/dwightlondon.org/s/AKfycbwdy2p4xA1Szzfu9MQbwyBo2dGeYFlq094ZhYhvLXNbXuEobJQ/exec?classcode="+group;
+//  
+//  var response = UrlFetchApp.fetch("http://www.google.com/");
+//  var htmlContent = response.getContentText();
+//    htmlContent = "hello";
+// 
+//  return htmlContent;
+//  
+//  }
+</script>
