@@ -7,7 +7,7 @@
  *     about any URL parameters provided.
  */
 function doGet(e) {
-  
+  var test="hello";
   var userName = Session.getActiveUser().getEmail().split("@");
   
   var template = HtmlService.createTemplateFromFile('Index');
